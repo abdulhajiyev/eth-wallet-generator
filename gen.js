@@ -1,19 +1,50 @@
-const bip39 = require('bip39');
-const ethers = require('ethers');
-const fs = require('fs');
+#!/usr/bin/env node
 
-let wallets = [];
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { generateEthWallet } from './ethWallet.js';
+import { generateAvaxWallet } from './avaxWallet.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
-    const mnemonic = bip39.generateMnemonic(256);
-    const wallet = ethers.Wallet.fromPhrase(mnemonic);
-    const privateKey = wallet.privateKey;
-    const publicKey = wallet.publicKey;
-    const address = wallet.address;
+const questions = [
+    {
+        type: 'list',
+        name: 'wallet',
+        message: 'Choose the wallet you want to create',
+        choices: ['ETH', 'AVAX'],
+    },
+    {
+        type: 'list',
+        name: 'phraseLength',
+        message: 'Choose the length of the secret phrase',
+        choices: ['12', '24'],
+        when: (answers) => answers.wallet === 'ETH' || answers.wallet === 'AVAX',
+    },
+    {
+        type: 'confirm',
+        name: 'saveToFile',
+        message: 'Do you want to save the output to a JSON file?',
+        default: false,
+    },
+    {
+        type: 'input',
+        name: 'filePath',
+        message: 'Enter the path where you want to save the file (default is the script path)',
+        when: (answers) => answers.saveToFile,
+        default: __dirname,
+    }
+];
 
-  
-console.log("Phrase: ", JSON.stringify(mnemonic, null, 4));
-console.log("Wallet: ", JSON.stringify(wallet, null, 4));
-console.log("Private: ", JSON.stringify(privateKey, null, 4));
-console.log("Public: ", JSON.stringify(publicKey, null, 4));
-console.log("Address: ", JSON.stringify(address, null, 4));
+inquirer.prompt(questions).then((answers) => {
+    if (answers.wallet === 'ETH') {
+        generateEthWallet(answers);
+    } else if (answers.wallet === 'AVAX') {
+        generateAvaxWallet(answers);
+    } else {
+        console.log(chalk.red('Unsupported wallet type'));
+    }
+});
