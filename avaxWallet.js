@@ -1,32 +1,25 @@
 // avaxWallet.js
-
-import bip39 from 'bip39'
-import { ethers } from 'ethers';
-import { Avalanche, BinTools, BN, Buffer } from '@avalabs/avalanchejs';
-import { KeyChain as AVMKeyChain } from '@avalabs/avalanchejs/dist/apis/avm/index.js';
+import { Avalanche, Mnemonic, Buffer } from "@avalabs/avalanchejs"
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
+
 export function generateAvaxWallet(answers) {
-  const strength = answers.phraseLength === '12' ? 128 : 256;
-  const mnemonic = bip39.generateMnemonic(strength);
-  const wallet = ethers.Wallet.fromPhrase(mnemonic);
-  const keychain = new AVMKeyChain();
-  const keypair = keychain.importKey(wallet.privateKey);
-  const address = keypair.getAddressString();
+  const avalanche = new Avalanche();
+  const xchain = avalanche.XChain()
+  const keychain = xchain.keyChain()
+  const keypair = keychain.makeKey()
+  const address = keypair.getAddressString()
+  const privateKey = keypair.getPrivateKeyString()
 
   const output = {
-    Phrase: mnemonic,
-    Private: wallet.privateKey,
-    Public: wallet.publicKey,
+    Private: privateKey,
     Address: address,
   };
 
-  console.log(chalk.green("Phrase: "), chalk.yellow(mnemonic));
-  console.log(chalk.green("Private: "), chalk.yellow(wallet.privateKey));
-  console.log(chalk.green("Public: "), chalk.yellow(wallet.publicKey));
-  console.log(chalk.green("Address: "), chalk.yellow(address));
+  console.log(chalk.green("Private: "), chalk.yellow(output.Private));
+  console.log(chalk.green("Address: "), chalk.yellow(output.Address));
 
   if (answers.saveToFile) {
     const filePath = path.join(answers.filePath, 'avax_wallet.json');
