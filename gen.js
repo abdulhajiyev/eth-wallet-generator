@@ -10,7 +10,6 @@ import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-
 const questions = [
     {
         type: 'list',
@@ -19,11 +18,15 @@ const questions = [
         choices: ['ETH', 'AVAX-X'],
     },
     {
-        type: 'list',
-        name: 'phraseLength',
-        message: 'Choose the length of the secret phrase',
-        choices: ['12', '24'],
-        when: (answers) => answers.wallet === 'ETH',
+        type: 'input',
+        name: 'count',
+        message: 'How many wallets do you want to generate?',
+        default: 1,
+        validate: function (value) {
+            var valid = !isNaN(parseFloat(value));
+            return valid || 'Please enter a number';
+        },
+        filter: Number
     },
     {
         type: 'confirm',
@@ -38,16 +41,6 @@ const questions = [
         when: (answers) => answers.saveToFile,
         default: __dirname,
     },
-    {
-        type: 'input',
-        name: 'walletCount',
-        message: 'How many wallets do you want to create?',
-        validate: function (value) {
-            var valid = !isNaN(parseFloat(value));
-            return valid || 'Please enter a number';
-        },
-        filter: Number
-    }
 ];
 
 inquirer.prompt(questions).then((answers) => {
